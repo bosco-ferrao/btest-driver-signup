@@ -58,4 +58,5 @@ JSON Data:
 }
 
 7) DELETE http://localhost:8080/drivers/4
+Note: delete code is kept simple
 
