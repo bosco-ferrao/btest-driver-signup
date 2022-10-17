@@ -9,6 +9,9 @@ Driver Class Object has
 In memory DB: H2
 Preloaded 3 values.
 
+Drawbacks:
+I've skipped pagination.
+
 $ curl -v localhost:8080/drivers
 ```
 There are unit tests done:

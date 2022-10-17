@@ -1,26 +1,30 @@
 package com.btest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
-
-import com.btest.error.DriverNotFoundException;
-import com.btest.error.DriverUnSupportedFieldPatchException;
-
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class DriverController {
 
     @Autowired
-    private DriverRepository repository;
+    private DriverService driverService;
 
     // Find
     @GetMapping("/drivers")
     List<Driver> findAll() {
-        return repository.findAll();
+        return driverService.findAll();
     }
 
     // Save
@@ -28,60 +32,31 @@ public class DriverController {
     //return 201 instead of 200
     @ResponseStatus(HttpStatus.CREATED)
     Driver newDriver(@RequestBody Driver newDriver) {
-        return repository.save(newDriver);
+        return driverService.newDriver(newDriver);
     }
 
     // Find
     @GetMapping("/drivers/{id}")
     Driver findOne(@PathVariable Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new DriverNotFoundException(id));
+        return driverService.findOne(id);
     }
 
     // Save or update
     @PutMapping("/drivers/{id}")
     Driver saveOrUpdate(@RequestBody Driver newDriver, @PathVariable Long id) {
-
-        return repository.findById(id)
-                .map(x -> {
-                    x.setName(newDriver.getName());
-                    x.setAddress(newDriver.getAddress());
-                    x.setReadyForRide(newDriver.getReadyForRide());
-                    return repository.save(x);
-                })
-                .orElseGet(() -> {
-                    newDriver.setId(id);
-                    return repository.save(newDriver);
-                });
+        return driverService.saveOrUpdate(newDriver, id);
     }
 
     // update readyForRide only
     @PatchMapping("/drivers/{id}")
     Driver patch(@RequestBody Map<String, Object> update, @PathVariable Long id) {
-
-        return repository.findById(id)
-                .map(x -> {
-
-                    Boolean readyForRide = (Boolean) update.get("readyForRide");
-                    if (readyForRide != null) {
-                        x.setReadyForRide(readyForRide);
-
-                        // better create a custom method to update a value = :newValue where id = :id
-                        return repository.save(x);
-                    } else {
-                        throw new DriverUnSupportedFieldPatchException(update.keySet());
-                    }
-
-                })
-                .orElseGet(() -> {
-                    throw new DriverNotFoundException(id);
-                });
+        return driverService.patch(update, id);
 
     }
 
     @DeleteMapping("/drivers/{id}")
     void deleteDriver(@PathVariable Long id) {
-        repository.deleteById(id);
+    	driverService.deleteById(id);
     }
 
 }
